@@ -1,0 +1,21 @@
+{
+  "name": "D × J · 记忆馆",
+  "short_name": "记忆馆",
+  "description": "Dan & Joy 聊天记录查看器",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#050712",
+  "theme_color": "#050712",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
