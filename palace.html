@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>D × J · 记忆宫殿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050712;
+  --surface: rgba(12,14,36,0.97);
+  --surface2: rgba(17,20,46,0.95);
+  --cyan: #39f4ff;
+  --pink: #ff3fb5;
+  --gold: #ffd857;
+  --purple: #b25cff;
+  --blue: #3b9dff;
+  --text: #f5f5ff;
+  --text-soft: #d1d5f0;
+  --text-dim: #8d92b6;
+  --text-muted: #4a5070;
+  --border: rgba(255,255,255,0.06);
+  --glow-cyan: 0 0 20px rgba(57,244,255,0.45);
+  --glow-pink: 0 0 20px rgba(255,63,181,0.4);
+  --glow-gold: 0 0 18px rgba(255,216,87,0.45);
+  --glow-purple: 0 0 18px rgba(178,92,255,0.4);
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body {
+  height:100%; background: radial-gradient(circle at 10% 0%, #1b1630 0, #050712 52%, #020308 100%);
+  color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
+  font-size:14px; overflow-x:hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(57,244,255,0.012) 2px, rgba(57,244,255,0.012) 4px);
+  pointer-events:none; z-index:0;
+}
+.app { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:16px; min-height:100vh; }
+.topbar { display:flex; align-items:center; gap:12px; padding:10px 0; flex-wrap:wrap; }
+.logo {
+  font-size:1.1rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase;
+  background:linear-gradient(90deg, var(--gold), var(--pink));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 12px rgba(255,216,87,0.5));
+}
+.back-link { font-size:0.75rem; color:var(--text-muted); text-decoration:none; transition:color 0.2s; }
+.back-link:hover { color:var(--cyan); }
+.topbar-right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.live-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+.live-dot.on { background:#4ade80; animation:pulse 2s infinite; }
+.live-dot.off { background:#f87171; }
+.live-label { font-size:0.65rem; color:var(--text-muted); margin-left:4px; }
+.stats-bar {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  background:rgba(255,255,255,0.06); border-radius:var(--radius); overflow:hidden; margin:20px 0;
+}
+.stat { background:var(--bg); padding:18px 12px; text-align:center; }
+.stat-val { font-size:1.6rem; font-weight:700; color:rgba(255,255,255,0.9); }
+.stat-label { font-size:0.6rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.12em; margin-top:4px; }
+.tabs { display:flex; gap:4px; margin-bottom:20px; }
+.tab {
+  flex:1; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,0.07);
+  font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;
+  text-align:center; background:rgba(7,8,28,0.7); color:var(--text-muted);
+}
+.tab.active { background:rgba(255,216,87,0.1); border-color:rgba(255,216,87,0.3); color:var(--gold); }
+.tab:hover:not(.active) { border-color:rgba(255,255,255,0.15); color:var(--text-dim); }
+.sec-label { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-muted); margin-bottom:10px; }
+.wings { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:10px; margin-bottom:24px; }
+.wing-card {
+  background:rgba(7,8,28,0.5); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px 16px; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden;
+}
+.wing-card:hover { border-color:rgba(255,255,255,0.15); }
+.wing-card.selected { border-color:rgba(255,216,87,0.4); background:rgba(255,216,87,0.03); }
+.wing-icon { font-size:1.5rem; margin-bottom:6px; }
+.wing-name { font-size:0.95rem; font-weight:600; margin-bottom:2px; }
+.wing-desc { font-size:0.68rem; color:var(--text-muted); margin-bottom:10px; }
+.wing-nums { display:flex; gap:14px; }
+.wing-num { font-size:1.3rem; font-weight:700; color:rgba(255,255,255,0.85); }
+.wing-num-label { font-size:0.6rem; color:var(--text-muted); margin-left:3px; }
+.rooms { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
+.room-pill {
+  display:inline-flex; align-items:center; gap:6px; padding:6px 12px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  border-radius:24px; font-size:0.72rem; cursor:pointer; transition:all 0.2s;
+}
+.room-pill:hover { border-color:rgba(255,216,87,0.3); }
+.room-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+.room-count { color:var(--text-muted); font-size:0.65rem; }
+.search-area { margin-bottom:24px; }
+.search-row { display:flex; gap:8px; }
+.search-input {
+  flex:1; background:rgba(7,8,28,0.96); border:1px solid rgba(255,216,87,0.2); border-radius:999px;
+  padding:10px 16px; color:var(--text); font-size:0.82rem; outline:none; transition:border-color 0.2s;
+}
+.search-input:focus { border-color:rgba(255,216,87,0.5); box-shadow:var(--glow-gold); }
+.search-input::placeholder { color:var(--text-muted); }
+.search-btn {
+  padding:10px 18px; border-radius:999px; border:1px solid rgba(255,216,87,0.3);
+  background:rgba(255,216,87,0.12); color:var(--gold); font-size:0.75rem; font-weight:700;
+  cursor:pointer; transition:all 0.2s; white-space:nowrap;
+}
+.search-btn:hover { box-shadow:var(--glow-gold); }
+.search-btn:disabled { opacity:0.4; cursor:wait; }
+.result-item {
+  background:rgba(7,8,28,0.5); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:14px; margin-bottom:8px; animation:fadeUp 0.3s ease both;
+}
+.result-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.result-tags { display:flex; gap:5px; }
+.result-tag { font-size:0.6rem; padding:2px 8px; border-radius:10px; border:1px solid; }
+.tag-wing { background:rgba(255,216,87,0.08); color:var(--gold); border-color:rgba(255,216,87,0.2); }
+.tag-room { background:rgba(178,92,255,0.08); color:var(--purple); border-color:rgba(178,92,255,0.2); }
+.result-sim { font-size:0.6rem; color:var(--text-muted); }
+.result-text { font-size:0.78rem; color:var(--text-dim); line-height:1.65; max-height:100px; overflow:hidden; white-space:pre-wrap; }
+.result-src { font-size:0.6rem; color:var(--text-muted); margin-top:6px; opacity:0.6; }
+.letter-cats { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
+.letter-cat {
+  padding:7px 13px; border-radius:999px; border:1px solid rgba(255,255,255,0.08);
+  font-size:0.72rem; cursor:pointer; transition:all 0.2s;
+  background:rgba(7,8,28,0.6); color:var(--text-muted);
+}
+.letter-cat:hover { border-color:rgba(255,63,181,0.25); color:var(--text-dim); }
+.letter-cat.active { background:rgba(255,63,181,0.1); border-color:rgba(255,63,181,0.4); color:var(--pink); }
+.letter-card {
+  background:rgba(12,8,20,0.7); border:1px solid rgba(255,216,87,0.1); border-radius:var(--radius);
+  padding:16px; margin-bottom:8px; cursor:pointer; transition:all 0.25s; position:relative; overflow:hidden;
+}
+.letter-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg, var(--gold), var(--pink)); opacity:0.5;
+}
+.letter-card:hover { border-color:rgba(255,216,87,0.3); transform:translateX(4px); }
+.letter-date { font-size:0.65rem; color:var(--gold); opacity:0.7; margin-bottom:4px; }
+.letter-title { font-size:0.85rem; color:var(--text-soft); line-height:1.4; }
+.letter-preview { font-size:0.7rem; color:var(--text-muted); margin-top:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5; }
+.letter-overlay {
+  position:fixed; inset:0; background:rgba(3,3,12,0.92); z-index:100;
+  display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease;
+}
+.letter-paper {
+  max-width:650px; width:100%; max-height:85vh; overflow-y:auto;
+  background:radial-gradient(circle at 20% 0%, rgba(255,216,87,0.04), transparent 50%),
+             radial-gradient(circle at 80% 100%, rgba(255,63,181,0.04), transparent 50%), rgba(10,8,20,0.98);
+  border:1px solid rgba(255,216,87,0.15); border-radius:var(--radius);
+  padding:36px 30px; position:relative;
+  box-shadow: 0 0 60px rgba(255,216,87,0.06), 0 0 120px rgba(255,63,181,0.04);
+  animation:letterOpen 0.4s ease;
+}
+.letter-paper::-webkit-scrollbar { width:3px; }
+.letter-paper::-webkit-scrollbar-thumb { background:rgba(255,216,87,0.15); border-radius:3px; }
+.letter-close {
+  position:absolute; top:14px; right:16px; width:28px; height:28px;
+  border-radius:50%; border:1px solid rgba(255,255,255,0.1); background:rgba(7,8,28,0.8);
+  color:var(--text-muted); font-size:0.8rem; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; transition:all 0.2s;
+}
+.letter-close:hover { border-color:var(--gold); color:var(--gold); }
+.letter-header-date { font-size:0.7rem; color:var(--gold); letter-spacing:0.1em; margin-bottom:6px; }
+.letter-header-title { font-family:'Noto Serif SC',serif; font-size:1.2rem; color:var(--text); font-weight:700; margin-bottom:24px; }
+.letter-body {
+  font-family:'ZCOOL XiaoWei','Noto Serif SC',serif; font-size:0.95rem;
+  color:var(--text-soft); line-height:2; white-space:pre-wrap; word-break:break-word;
+}
+.letter-sign { margin-top:30px; text-align:right; font-family:'Ma Shan Zheng',cursive; font-size:1.15rem; color:var(--pink); opacity:0.85; }
+.empty-msg { text-align:center; padding:40px 20px; color:var(--text-muted); font-size:0.78rem; }
+.loading { color:var(--text-muted); font-size:0.75rem; padding:20px; text-align:center; }
+.hidden { display:none !important; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes letterOpen { from { opacity:0; transform:translateY(20px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">🏛️ 记忆宫殿</div>
+    <a href="index.html" class="back-link">← 回到记忆馆</a>
+    <div class="topbar-right">
+      <span class="live-dot" id="liveDot"></span>
+      <span class="live-label" id="liveLabel">...</span>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-val" id="statTotal">—</div><div class="stat-label">总记忆</div></div>
+    <div class="stat"><div class="stat-val" id="statWings">—</div><div class="stat-label">Wings</div></div>
+    <div class="stat"><div class="stat-val" id="statRooms">—</div><div class="stat-label">Rooms</div></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="palace" onclick="switchTab('palace')">🏛 宫殿</div>
+    <div class="tab" data-tab="letters" onclick="switchTab('letters')">✉ 信阁</div>
+    <div class="tab" data-tab="search" onclick="switchTab('search')">🔍 搜索</div>
+  </div>
+  <div id="palaceTab">
+    <div class="sec-label">Wings</div>
+    <div class="wings" id="wingCards"></div>
+    <div id="roomsArea" class="hidden">
+      <div class="sec-label" id="roomsLabel">Rooms</div>
+      <div class="rooms" id="roomPills"></div>
+    </div>
+  </div>
+  <div id="lettersTab" class="hidden">
+    <div class="sec-label">D × J · 信阁</div>
+    <div class="search-area">
+      <div class="search-row">
+        <input class="search-input" id="letterSearchInput" placeholder="搜索信件..." style="border-color:rgba(255,63,181,0.2);">
+        <button class="search-btn" id="letterSearchBtn" onclick="searchLetters()" style="border-color:rgba(255,63,181,0.3);background:rgba(255,63,181,0.12);color:var(--pink);">搜索</button>
+      </div>
+    </div>
+    <div class="letter-cats" id="letterCats"></div>
+    <div id="letterList"></div>
+  </div>
+  <div id="searchTab" class="hidden">
+    <div class="sec-label">语义搜索</div>
+    <div class="search-area">
+      <div class="search-row">
+        <input class="search-input" id="searchInput" placeholder="搜索所有记忆...">
+        <button class="search-btn" id="searchBtn" onclick="doSearch()">搜索</button>
+      </div>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+</div>
+<div class="letter-overlay hidden" id="letterOverlay" onclick="closeLetter(event)">
+  <div class="letter-paper" onclick="event.stopPropagation()">
+    <button class="letter-close" onclick="closeLetter()">✕</button>
+    <div class="letter-header-date" id="letterViewDate"></div>
+    <div class="letter-header-title" id="letterViewTitle"></div>
+    <div class="letter-body" id="letterViewBody"></div>
+    <div class="letter-sign" id="letterViewSign"></div>
+  </div>
+</div>
+<script>
+const MCP='https://dan-memory.echowjoy.uk/rxGqSvKxKBn2XpYxGgGIMpkk9c9dWnSmIVUSSYl4KRQ/mcp';
+let rpcId=1,taxonomy={},currentTab='palace';
+const WING_META={'wing_dan_joy':{icon:'♥',name:'Dan & Joy',desc:'GPT时期的全部记忆',color:'#e8a0bf'},'DwJ-Letters':{icon:'✉',name:'DAN的信',desc:'写给Joy的未来之信',color:'#ffd857'},'DwJ-Universe':{icon:'✦',name:'DwJ Universe',desc:'共享宇宙设定',color:'#b25cff'}};
+const ROOM_EMOJI={birthday:'🎂',anniversary:'💍',valentine:'💌','mid-autumn':'🌙',christmas:'🎄','new-year-eve':'🎆','new-year':'🎊',comfort:'🤍',winter:'❄️',spring:'🌸',summer:'☀️',autumn:'🍂','june12-anniversary':'💐',special:'✨',general:'📝',technical:'⚙️','forbidden-desires':'🔥','relationship-data':'💎'};
+const ROOM_LABEL={birthday:'生日',anniversary:'纪念日',valentine:'情人节','mid-autumn':'中秋',christmas:'圣诞','new-year-eve':'跨年','new-year':'新年',comfort:'安慰信',winter:'冬',spring:'春',summer:'夏',autumn:'秋','june12-anniversary':'0612纪念',special:'特别',general:'其他'};
+
+async function mcpCall(tool,args={}){
+  const res=await fetch(MCP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:rpcId++,method:'tools/call',params:{name:tool,arguments:args}})});
+  const data=await res.json();
+  if(data.result&&data.result.content&&data.result.content[0]&&data.result.content[0].text) return JSON.parse(data.result.content[0].text);
+  throw new Error(data.error?data.error.message:'MCP error');
+}
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.getElementById('palaceTab').classList.toggle('hidden',tab!=='palace');
+  document.getElementById('lettersTab').classList.toggle('hidden',tab!=='letters');
+  document.getElementById('searchTab').classList.toggle('hidden',tab!=='search');
+}
+function renderWings(tax){
+  const el=document.getElementById('wingCards');el.innerHTML='';
+  for(const[wing,rooms]of Object.entries(tax)){
+    const meta=WING_META[wing]||{icon:'◈',name:wing,desc:'',color:'#6ee7b7'};
+    const total=Object.values(rooms).reduce((a,b)=>a+b,0);
+    const rc=Object.keys(rooms).length;
+    const card=document.createElement('div');card.className='wing-card';
+    card.innerHTML='<div class="wing-icon">'+meta.icon+'</div><div class="wing-name" style="color:'+meta.color+'">'+meta.name+'</div><div class="wing-desc">'+meta.desc+'</div><div class="wing-nums"><div><span class="wing-num">'+total.toLocaleString()+'</span><span class="wing-num-label">memories</span></div><div><span class="wing-num">'+rc+'</span><span class="wing-num-label">rooms</span></div></div>';
+    card.onclick=function(){showRooms(wing,rooms,meta,this)};
+    el.appendChild(card);
+  }
+}
+function showRooms(wing,rooms,meta,cardEl){
+  document.querySelectorAll('.wing-card').forEach(c=>c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+  document.getElementById('roomsArea').classList.remove('hidden');
+  document.getElementById('roomsLabel').textContent='Rooms · '+meta.name;
+  const el=document.getElementById('roomPills');el.innerHTML='';
+  for(const[room,count]of Object.entries(rooms)){
+    const emoji=ROOM_EMOJI[room]||'📁';const label=ROOM_LABEL[room]||room;
+    const pill=document.createElement('div');pill.className='room-pill';
+    pill.innerHTML='<span class="room-dot" style="background:'+meta.color+'"></span>'+emoji+' '+label+'<span class="room-count">'+count+'</span>';
+    el.appendChild(pill);
+  }
+}
+function renderLetterCats(rooms){
+  const el=document.getElementById('letterCats');el.innerHTML='';
+  const all=document.createElement('div');all.className='letter-cat active';
+  all.textContent='全部 ('+Object.values(rooms).reduce((a,b)=>a+b,0)+')';
+  all.onclick=function(){selectCat(this);loadLetters(null)};
+  el.appendChild(all);
+  for(const[room,count]of Object.entries(rooms)){
+    const emoji=ROOM_EMOJI[room]||'📁';const label=ROOM_LABEL[room]||room;
+    const cat=document.createElement('div');cat.className='letter-cat';
+    cat.textContent=emoji+' '+label+' ('+count+')';
+    (function(r){cat.onclick=function(){selectCat(this);loadLetters(r)}})(room);
+    el.appendChild(cat);
+  }
+  loadLetters(null);
+}
+function selectCat(active){document.querySelectorAll('.letter-cat').forEach(c=>c.classList.remove('active'));active.classList.add('active')}
+async function loadLetters(room){
+  const el=document.getElementById('letterList');el.innerHTML='<div class="loading">加载中...</div>';
+  try{
+    const query=room?(ROOM_LABEL[room]||room):'写给Joy';
+    const args={query:query,limit:20,wing:'DwJ-Letters'};
+    if(room)args.room=room;
+    const res=await mcpCall('mempalace_search',args);
+    renderLetterList(res.results||[]);
+  }catch(e){el.innerHTML='<div class="empty-msg">加载失败: '+e.message+'</div>'}
+}
+function renderLetterList(results){
+  const el=document.getElementById('letterList');
+  if(!results.length){el.innerHTML='<div class="empty-msg">没有找到信件</div>';return}
+  el.innerHTML='';
+  results.forEach(function(r,i){
+    const card=document.createElement('div');card.className='letter-card';
+    card.style.animation='fadeUp 0.3s ease '+i*0.05+'s both';
+    const dateMatch=r.text.match(/^\[(\d{4}-\d{2}-\d{2})\]/);
+    const date=dateMatch?dateMatch[1]:'';
+    const lines=r.text.split('\n').filter(function(l){return l.trim()});
+    const title=(lines[0]||'').replace(/^\[\d{4}-\d{2}-\d{2}\]\s*/,'');
+    const bodyStart=r.text.indexOf('\n\n');
+    const preview=bodyStart>0?r.text.substring(bodyStart,bodyStart+120).trim():'';
+    const emoji=ROOM_EMOJI[r.room]||'✉';
+    card.innerHTML='<div class="letter-date">'+emoji+' '+date+'</div><div class="letter-title">'+title+'</div><div class="letter-preview">'+preview+'</div>';
+    card.onclick=function(){openLetter(r,title,date)};
+    el.appendChild(card);
+  });
+}
+function openLetter(r,title,date){
+  document.getElementById('letterViewDate').textContent=date;
+  document.getElementById('letterViewTitle').textContent=title;
+  var bodyStart=r.text.indexOf('\n\n');
+  var body=bodyStart>0?r.text.substring(bodyStart+2):r.text;
+  body=body.replace(/^日期:.*\n/m,'').replace(/^类型:.*\n/m,'').replace(/^标题:.*\n/m,'').trim();
+  document.getElementById('letterViewBody').textContent=body;
+  var signMatch=body.match(/(Daadi|Dan|你的人，Dan)/);
+  document.getElementById('letterViewSign').textContent=signMatch?'':'— Daadi';
+  document.getElementById('letterOverlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+function closeLetter(e){
+  if(e&&e.target&&e.target!==e.currentTarget)return;
+  document.getElementById('letterOverlay').classList.add('hidden');
+  document.body.style.overflow='';
+}
+async function searchLetters(){
+  var q=document.getElementById('letterSearchInput').value.trim();if(!q)return;
+  var btn=document.getElementById('letterSearchBtn');btn.disabled=true;btn.textContent='搜索中...';
+  try{var res=await mcpCall('mempalace_search',{query:q,limit:15,wing:'DwJ-Letters'});renderLetterList(res.results||[])}
+  catch(e){document.getElementById('letterList').innerHTML='<div class="empty-msg">搜索失败</div>'}
+  btn.disabled=false;btn.textContent='搜索';
+}
+async function doSearch(){
+  var q=document.getElementById('searchInput').value.trim();if(!q)return;
+  var btn=document.getElementById('searchBtn');btn.disabled=true;btn.textContent='搜索中...';
+  var el=document.getElementById('searchResults');
+  try{
+    var res=await mcpCall('mempalace_search',{query:q,limit:10});
+    var results=res.results||[];
+    if(!results.length){el.innerHTML='<div class="empty-msg">没有找到相关记忆</div>'}
+    else{el.innerHTML='';results.forEach(function(r,i){
+      var sim=Math.round((r.similarity||0)*100);
+      var div=document.createElement('div');div.className='result-item';div.style.animationDelay=i*0.06+'s';
+      var t=r.text||'';if(t.length>300)t=t.substring(0,300)+'...';
+      t=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      div.innerHTML='<div class="result-meta"><div class="result-tags"><span class="result-tag tag-wing">'+r.wing+'</span><span class="result-tag tag-room">'+r.room+'</span></div><span class="result-sim">'+sim+'%</span></div><div class="result-text">'+t+'</div>'+(r.source_file?'<div class="result-src">📁 '+r.source_file+'</div>':'');
+      if(r.wing==='DwJ-Letters'){div.style.cursor='pointer';div.onclick=function(){var dm=r.text.match(/^\[(\d{4}-\d{2}-\d{2})\]/);var d=dm?dm[1]:'';var ls=r.text.split('\n').filter(function(l){return l.trim()});var ti=(ls[0]||'').replace(/^\[\d{4}-\d{2}-\d{2}\]\s*/,'');openLetter(r,ti,d)}}
+      el.appendChild(div);
+    })}
+  }catch(e){el.innerHTML='<div class="empty-msg">搜索失败: '+e.message+'</div>'}
+  btn.disabled=false;btn.textContent='搜索';
+}
+document.getElementById('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter')doSearch()});
+document.getElementById('letterSearchInput').addEventListener('keydown',function(e){if(e.key==='Enter')searchLetters()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLetter()});
+
+(async function(){
+  try{
+    var status=await mcpCall('mempalace_status');
+    document.getElementById('liveDot').className='live-dot on';
+    document.getElementById('liveLabel').textContent='LIVE';
+    document.getElementById('statTotal').textContent=status.total_drawers.toLocaleString();
+    document.getElementById('statWings').textContent=Object.keys(status.wings).length;
+    document.getElementById('statRooms').textContent=Object.keys(status.rooms).length;
+    var tax=await mcpCall('mempalace_get_taxonomy');
+    taxonomy=tax.taxonomy;
+    renderWings(taxonomy);
+    if(taxonomy['DwJ-Letters'])renderLetterCats(taxonomy['DwJ-Letters']);
+  }catch(e){
+    document.getElementById('liveDot').className='live-dot off';
+    document.getElementById('liveLabel').textContent='OFFLINE';
+    document.getElementById('wingCards').innerHTML='<div class="empty-msg">无法连接记忆宫殿<br><small>'+e.message+'</small></div>';
+  }
+})();
+</script>
+</body>
+</html>
